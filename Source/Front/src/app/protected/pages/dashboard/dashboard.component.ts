@@ -30,22 +30,9 @@ export default class DashboardComponent {
   hayCorteGeneralActivo: boolean = false;
   validacionesCompletas: boolean = false;
 
-  // Productos
-  productos: any[] = [];
-  loadingProductos: boolean = false;
-  totalProductos: number = 0;
-  pagination: Pagination = {
-    pageIndex: 0,
-    pageSize: 12,
-    search: '',
-    length: 0,
-    pageSizeOptions: [12, 24, 36, 48]
-  };
-
   constructor(
     private servicesGServ: ServicesGService
     , private authServ: AuthService
-    , private productosService: ProductosService
   ) { }
 
   async ngOnInit() {
@@ -54,65 +41,8 @@ export default class DashboardComponent {
 
     this.getMenuByPermissions( this.idUserLogON );
 
-    // Marcar validaciones como completas para mostrar elementos UI
-    this.validacionesCompletas = true;
+    // Primero obtener la configuración local y información de sucursal
     this.cdr.detectChanges();
-
-    // Cargar productos
-    this.loadProductos();
-  }
-
-  getMenuByPermissions(idUser: any){
-    this.authServ.getMenuByPermissions( idUser )
-    .subscribe( data =>{
-      //console.log(data);
-      if(data.status == 0){
-        this._menuList = data.data;
-        // Optional: if you want the first panel open by default with mat-accordion,
-        // you might need to handle it differently or set properties on mat-expansion-panel.
-        // For single expansion, mat-accordion handles it.
-      }
-    })
-  }
-
-  loadProductos(): void {
-    this.loadingProductos = true;
-
-    this.productosService.getProductsPag(this.pagination).subscribe({
-      next: (response: any) => {
-        if (response.status == 0) {
-          this.productos = response.data.rows || [];
-          this.totalProductos = response.data.count || 0;
-        }
-        this.loadingProductos = false;
-        this.cdr.detectChanges();
-      },
-      error: (error) => {
-        console.error('Error al cargar productos:', error);
-        this.loadingProductos = false;
-        this.servicesGServ.showAlert('E', 'Error', 'No se pudieron cargar los productos');
-      }
-    });
-  }
-
-  onSearchProducts(searchTerm: string): void {
-    this.pagination.search = searchTerm;
-    this.pagination.pageIndex = 0;
-    this.loadProductos();
-  }
-
-  verDetalleProducto(producto: any): void {
-    console.log('Ver detalle producto:', producto);
-    // Aquí puedes implementar la navegación a detalle del producto
-  }
-
-  agregarAlCarrito(producto: any): void {
-    console.log('Agregar al carrito:', producto);
-    this.snackBar.open(`${producto.nombre} agregado al carrito`, 'Cerrar', {
-      duration: 3000,
-      horizontalPosition: 'end',
-      verticalPosition: 'top'
-    });
   }
 
   changeRoute( route: string ): void {
@@ -147,6 +77,40 @@ export default class DashboardComponent {
 
     // Navegar normalmente si no hay restricciones o si hay turno activo
     this.servicesGServ.changeRoute( `/${ this._appMain }/${ route }` );
+  }
+
+  getMenuByPermissions(idUser: any){
+    this.authServ.getMenuByPermissions( idUser )
+    .subscribe( data =>{
+      //console.log(data);
+      if(data.status == 0){
+        this._menuList = data.data;
+        // Optional: if you want the first panel open by default with mat-accordion,
+        // you might need to handle it differently or set properties on mat-expansion-panel.
+        // For single expansion, mat-accordion handles it.
+      }
+    })
+  }
+
+  /**
+   * Verifica si un card del menú debe estar deshabilitado
+   * @param linkList - El valor del atributo linkList del item del menú
+   * @returns true si el card debe estar deshabilitado
+   */
+  isCardDisabled(linkList: string): boolean {
+    const rutasRestringidas = ['cajaPuntoVenta', 'ventaClientes', 'cobranzaCredito', 'corteIndividual'];
+
+    // Verificar rutas que requieren turno activo
+    if (rutasRestringidas.includes(linkList) && !this.hayTurnoActivo) {
+      return true;
+    }
+
+    // Verificar ruta que requiere corte general activo
+    if (linkList === 'corteGeneral' && !this.hayCorteGeneralActivo) {
+      return true;
+    }
+
+    return false;
   }
 
 }

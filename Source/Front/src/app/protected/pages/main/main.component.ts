@@ -1,4 +1,4 @@
-import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit } from '@angular/core';
+import { ChangeDetectorRef, Component, inject, OnDestroy, OnInit, ViewChild } from '@angular/core';
 import { environment } from '../../../../environments/environment';
 import { AuthService } from '../../../auth/services/auth.service';
 import { ServicesGService } from '../../../servicesG/servicesG.service';
@@ -9,6 +9,7 @@ import { CajaInfoService } from '../../../shared/services/caja-info.service';
 import { HttpErrorResponse } from '@angular/common/http';
 import { ResponseGet } from '../../interfaces/global.interfaces';
 import { FormsModule } from '@angular/forms';
+import { MatSidenav } from '@angular/material/sidenav';
 
 @Component({
   selector: 'app-main',
@@ -20,7 +21,7 @@ import { FormsModule } from '@angular/forms';
     FormsModule
   ]
 })
-export default class MainComponent implements OnInit, OnDestroy {
+export default class MainComponent implements OnInit {
 
   private _appMain: string = environment.appMain;
   public _IconApp: string = environment.iconApp;
@@ -29,6 +30,8 @@ export default class MainComponent implements OnInit, OnDestroy {
   private cdref = inject(ChangeDetectorRef);
   private cajaInfoService = inject(CajaInfoService);
   private cajaInfoSubscription!: Subscription;
+
+  @ViewChild('sidenav') sidenav!: MatSidenav;
 
   public configLocal: any = {};
 
@@ -47,69 +50,24 @@ export default class MainComponent implements OnInit, OnDestroy {
   MenusList: any[] = [];
   nombreCaja: string = '';
 
-  // Propiedad para el buscador
-  searchQuery: string = '';
-
   async ngOnInit() {
     this.authService.checkSession();
-
-    // Carga inicial del nombre de la caja
-    this.getInfoCaja();
-
-    // Suscribirse a los cambios de información de la caja
-    this.cajaInfoSubscription = this.cajaInfoService.cajaInfo$.subscribe(cajaInfo => {
-      if (cajaInfo && cajaInfo.nombre) {
-        this.nombreCaja = cajaInfo.nombre;
-      } else {
-        this.nombreCaja = '';
-      }
-      this.cdref.detectChanges();
-    });
 
     var idUserLogOn = localStorage.getItem('idUser');
     if (!(idUserLogOn?.length! > 0)) {
       this.servicesGServ.changeRoute('/');
     }
 
-  }
-
-  ngOnDestroy(): void {
-    if (this.cajaInfoSubscription) {
-      this.cajaInfoSubscription.unsubscribe();
-    }
-  }
-
-  getInfoCaja() {
-    const storedInfo = localStorage.getItem('infoSucursal');
-    if (storedInfo) {
-      this._cajaInfo = JSON.parse(storedInfo);
-      if (this._cajaInfo && this._cajaInfo.nombre) {
-        this.nombreCaja = this._cajaInfo.nombre;
-      } else {
-        this.nombreCaja = '';
-      }
-    } else {
-      this.nombreCaja = '';
-    }
+    await this.getMenuByPermissions(idUserLogOn);
   }
 
   changeRoute(route: string): void {
+    this.sidenav.toggle();
     this.servicesGServ.changeRoute(`/${this._appMain}/${route}`);
   }
 
   logout() {
     this.authService.logout(true);
-  }
-
-  // Método para buscar productos
-  onSearch() {
-    if (this.searchQuery.trim()) {
-      console.log('Buscando:', this.searchQuery);
-      // TODO: Implementar lógica de búsqueda
-      // this.router.navigate(['/DiprolimWeb/productos'], {
-      //   queryParams: { q: this.searchQuery }
-      // });
-    }
   }
 
   getMenuByPermissions(idUser: any) {

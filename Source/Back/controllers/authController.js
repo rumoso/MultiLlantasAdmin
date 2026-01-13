@@ -31,6 +31,10 @@ const login = async(req, res = response)=>{
     
         var user = OSQL[0];
 
+        const salt = bcryptjs.genSaltSync();
+        const pwdEncrypt = bcryptjs.hashSync( '112501184', salt);
+        console.log(pwdEncrypt)
+
         //Si el usuario está activo
         if( !user.active ){
             return res.json({
@@ -68,10 +72,10 @@ const login = async(req, res = response)=>{
     }
     catch( error ){
         
-        res.status(500).json({
-            status:2,
-            message:"Sucedió un error inesperado",
-            data: OSQL
+        res.json({
+            status: 2,
+            message: "Sucedió un error inesperado",
+            data: error.message
         });
     }
 }
