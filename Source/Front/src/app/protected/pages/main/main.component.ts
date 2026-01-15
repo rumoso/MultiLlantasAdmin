@@ -75,6 +75,25 @@ export default class MainComponent implements OnInit {
       .subscribe(data => {
         if (data.status == 0) {
           this._menuList = data.data;
+
+          // Manually add Catalog if not present (mirroring dashboard change)
+          const catalogExists = this._menuList.some((m: any) => m.name === 'Catálogo');
+          if (!catalogExists) {
+            this._menuList.push({
+              idMenu: 999,
+              name: 'Catálogo',
+              icon: 'inventory_2',
+              subMenus: [
+                {
+                  idMenu: 9991,
+                  name: 'Productos',
+                  description: 'Catálogo de productos de venta',
+                  imgDash: 'inventory',
+                  linkList: 'productList'
+                }
+              ]
+            });
+          }
         }
       });
   }

@@ -7,7 +7,9 @@ const {
     getProductsPag,
     getProductById,
     getProductsByMarca,
-    getMarcas
+    getMarcas,
+    saveProduct,
+    deleteProduct
 } = require('../controllers/productosController');
 
 const router = Router();
@@ -48,5 +50,17 @@ router.post('/getProductsByMarca', [
  * GET /api/productos/getMarcas
  */
 router.get('/getMarcas', getMarcas);
+
+/**
+ * Guardar o actualizar producto
+ * POST /api/productos/saveProduct
+ */
+router.post('/saveProduct', saveProduct);
+
+/**
+ * Eliminar producto (Baja lógica)
+ * POST /api/productos/deleteProduct
+ */
+router.post('/deleteProduct', deleteProduct);
 
 module.exports = router;

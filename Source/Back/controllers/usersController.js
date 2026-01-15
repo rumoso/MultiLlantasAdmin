@@ -4,7 +4,7 @@ const moment = require('moment');
 
 const { dbConnection } = require('../database/config');
 
-const getUsersListWithPage = async(req, res = response) => {
+const getUsersListWithPage = async (req, res = response) => {
 
     const {
         search = '', limiter = 10, start = 0
@@ -12,39 +12,39 @@ const getUsersListWithPage = async(req, res = response) => {
 
     console.log(req.body)
 
-    try{
+    try {
 
-        var OSQL = await dbConnection.query(`call getUsersListWithPage('${ search }',${ start },${ limiter })`)
+        var OSQL = await dbConnection.query(`call getUsersListWithPage('${search}',${start},${limiter})`)
 
-        if(OSQL.length == 0){
+        if (OSQL.length == 0) {
 
             res.json({
-                status:0,
-                message:"Ejecutado correctamente.",
-                data:{
-                count: 0,
-                rows: null
+                status: 0,
+                message: "Ejecutado correctamente.",
+                data: {
+                    count: 0,
+                    rows: null
                 }
             });
 
         }
-        else{
+        else {
 
-            const iRows = ( OSQL.length > 0 ? OSQL[0].iRows: 0 );
-            
+            const iRows = (OSQL.length > 0 ? OSQL[0].iRows : 0);
+
             res.json({
                 status: 0,
                 message: "Ejecutado correctamente.",
-                data:{
+                data: {
                     count: iRows,
                     rows: OSQL
                 }
             });
-            
+
         }
-        
-    }catch(error){
-      
+
+    } catch (error) {
+
         res.json({
             status: 2,
             message: "Sucedió un error inesperado",
@@ -53,7 +53,7 @@ const getUsersListWithPage = async(req, res = response) => {
     }
 };
 
-const getUserByID = async(req, res = response) => {
+const getUserByID = async (req, res = response) => {
 
     const {
         idUser
@@ -61,11 +61,11 @@ const getUserByID = async(req, res = response) => {
 
     //console.log(req.body)
 
-    try{
-        
-        var OSQL = await dbConnection.query(`call getUserByID(${ idUser })`)
+    try {
 
-        if(OSQL.length == 0){
+        var OSQL = await dbConnection.query(`call getUserByID(${idUser})`)
+
+        if (OSQL.length == 0) {
 
             res.json({
                 status: 0,
@@ -74,7 +74,7 @@ const getUserByID = async(req, res = response) => {
             });
 
         }
-        else{
+        else {
 
             res.json({
                 status: 0,
@@ -83,9 +83,9 @@ const getUserByID = async(req, res = response) => {
             });
 
         }
-        
-    }catch(error){
-      
+
+    } catch (error) {
+
         res.json({
             status: 2,
             message: "Sucedió un error inesperado",
@@ -95,39 +95,37 @@ const getUserByID = async(req, res = response) => {
 
 };
 
-const insertUser = async(req, res) => {
-    
+const insertUser = async (req, res) => {
+
     const {
         name,
         userName,
         pwd = '',
-        idStatus = 0,
         active,
 
         idUserLogON,
         idSucursalLogON
-        
+
     } = req.body;
 
     //console.log(req.body)
 
-    try{
+    try {
 
         const oGetDateNow = moment().format('YYYY-MM-DD HH:mm:ss');
 
         //encript pwd
         const salt = bcryptjs.genSaltSync();
-        const pwdEncrypt = bcryptjs.hashSync( pwd, salt);
+        const pwdEncrypt = bcryptjs.hashSync(pwd, salt);
 
         var OSQL = await dbConnection.query(`call insertUser(
-        '${ oGetDateNow }'
-        ,'${ name }'
-        ,'${ userName }'
-        ,'${ pwdEncrypt }'
-        , ${ idStatus }
-        , ${ active }
+        '${oGetDateNow}'
+        ,'${name}'
+        ,'${userName}'
+        ,'${pwdEncrypt}'
+        , ${active}
 
-        , ${ idUserLogON }
+        , ${idUserLogON}
         )`)
 
         res.json({
@@ -136,7 +134,7 @@ const insertUser = async(req, res) => {
             insertID: OSQL[0].out_id
         });
 
-    }catch(error){
+    } catch (error) {
 
         res.json({
             status: 2,
@@ -147,15 +145,14 @@ const insertUser = async(req, res) => {
     }
 }
 
-const updateUser = async(req, res) => {
-   
+const updateUser = async (req, res) => {
+
     const {
         idUser,
 
         name,
         userName,
-        pwd = '',
-        idStatus = 0,
+        // pwd = '',
         active,
 
         idUserLogON,
@@ -165,14 +162,13 @@ const updateUser = async(req, res) => {
 
     //console.log(req.body)
 
-    try{
+    try {
 
         var OSQL = await dbConnection.query(`call updateUser(
-        ${ idUser }
-        ,'${ name }'
-        ,'${ userName }'
-        ,'${ idStatus }'
-        , ${ active }
+        ${idUser}
+        ,'${name}'
+        ,'${userName}'
+        , ${active}
         )`)
 
         //var ODeleteSync_up = await dbConnection.query(`call deleteSync_up( 'Users', ${ idUser } )`);
@@ -182,7 +178,7 @@ const updateUser = async(req, res) => {
             message: OSQL[0].message
         });
 
-    }catch(error){
+    } catch (error) {
 
         res.json({
             status: 2,
@@ -193,7 +189,7 @@ const updateUser = async(req, res) => {
     }
 }
 
-const changePassword = async(req, res) => {
+const changePassword = async (req, res) => {
 
     const {
         idUser,
@@ -203,13 +199,13 @@ const changePassword = async(req, res) => {
 
     //console.log(req.body)
 
-    try{
+    try {
 
-        if(pwd == pwd2){
+        if (pwd == pwd2) {
 
             //encript pwd
             const salt = bcryptjs.genSaltSync();
-            const pwdEncrypt = bcryptjs.hashSync( pwd, salt);
+            const pwdEncrypt = bcryptjs.hashSync(pwd, salt);
 
             var OSQL = await dbConnection.query(`call updatePWD(
             ${idUser}
@@ -224,16 +220,16 @@ const changePassword = async(req, res) => {
                 insertID: OSQL[0].out_id
             });
 
-        }else{
+        } else {
 
             res.json({
-            status: 1,
-            message: "Las contraseñas no coinciden",
+                status: 1,
+                message: "Las contraseñas no coinciden",
             });
 
         }
 
-    }catch(error){
+    } catch (error) {
 
         res.json({
             status: 2,
@@ -244,40 +240,38 @@ const changePassword = async(req, res) => {
     }
 }
 
-const disabledUser = async(req, res) => {
-   
+const disabledUser = async (req, res) => {
+
     const {
         idUser
     } = req.body;
 
     //console.log(req.body)
 
-    try{
+    try {
 
         var OSQL = await dbConnection.query(`call disabledUser(
-        ${ idUser }
+        ${idUser}
         )`)
 
-        var ODeleteSync_up = await dbConnection.query(`call deleteSync_up( 'Users', ${ idUser } )`);
-
         res.json({
-            status:0,
-            message:"Usuario deshabilitado con éxito.",
+            status: 0,
+            message: OSQL[0].message,
             insertID: OSQL[0].out_id
         });
 
-    }catch(error){
+    } catch (error) {
 
         res.json({
-        status:2,
-        message: "Sucedió un error inesperado",
-        data: error.message
+            status: 2,
+            message: "Sucedió un error inesperado",
+            data: error.message
         });
 
     }
 }
 
-const cbxGetSellersCombo = async(req, res = response) => {
+const cbxGetSellersCombo = async (req, res = response) => {
 
     const {
         idUser,
@@ -286,11 +280,11 @@ const cbxGetSellersCombo = async(req, res = response) => {
 
     //console.log(req.body)
 
-    try{
+    try {
 
-        var OSQL = await dbConnection.query(`call cbxGetSellersCombo( ${ idUser },'${ search }' )`)
+        var OSQL = await dbConnection.query(`call cbxGetSellersCombo( ${idUser},'${search}' )`)
 
-        if(OSQL.length == 0){
+        if (OSQL.length == 0) {
 
             res.json({
                 status: 3,
@@ -299,17 +293,17 @@ const cbxGetSellersCombo = async(req, res = response) => {
             });
 
         }
-        else{
+        else {
 
             res.json({
-                status:  0,
-                message:"Ejecutado correctamente.",
+                status: 0,
+                message: "Ejecutado correctamente.",
                 data: OSQL
             });
 
         }
 
-    }catch(error){
+    } catch (error) {
 
         res.json({
             status: 2,
@@ -321,7 +315,7 @@ const cbxGetSellersCombo = async(req, res = response) => {
 
 };
 
-const updateAuthorizationCode = async(req, res) => {
+const updateAuthorizationCode = async (req, res) => {
 
     const {
         idUser,
@@ -330,11 +324,11 @@ const updateAuthorizationCode = async(req, res) => {
 
     //console.log(req.body)
 
-    try{
+    try {
 
         var OSQL = await dbConnection.query(`call updateAuthorizationCode(
-        ${ idUser }
-        ,'${ authorizationCode }'
+        ${idUser}
+        ,'${authorizationCode}'
         )`)
 
         //var ODeleteSync_up = await dbConnection.query(`call deleteSync_up( 'Users', ${ idUser } )`);
@@ -344,7 +338,7 @@ const updateAuthorizationCode = async(req, res) => {
             message: OSQL[0].message
         });
 
-    }catch(error){
+    } catch (error) {
 
         res.json({
             status: 2,
@@ -355,49 +349,15 @@ const updateAuthorizationCode = async(req, res) => {
     }
 }
 
-const getCatStatusUser = async(req, res = response) => {
-
-    const { text = '' } = req.body;
-
-    try {
-        var OSQL = await dbConnection.query(`call getCatStatusUser( '${ text }' )`)
-
-        if (!OSQL || OSQL.length === 0) {
-            return res.json({
-                status: 0,
-                message: "No se encontró información.",
-                data: null,
-            });
-        }
-
-        return res.json({
-            status: 0,
-            message: "Ejecutado correctamente.",
-            data: OSQL,
-        });
-
-    } catch (error) {
-        
-        console.error("Error en getCatStatusUser:", error);
-        return res.status(500).json({
-            status: 2,
-            message: "Sucedió un error inesperado.",
-            data: error.message,
-        });
-        
-    }
-
-};
-
-const cbxGetEmployeesForOrigen = async(req, res = response) => {
+const cbxGetEmployeesForOrigen = async (req, res = response) => {
 
     const { idOrigen, search = '' } = req.body;
 
-    try{
+    try {
 
-        var OSQL = await dbConnection.query(`call cbxGetEmployeesForOrigen( ${ idOrigen }, '${ search }' )`)
+        var OSQL = await dbConnection.query(`call cbxGetEmployeesForOrigen( ${idOrigen}, '${search}' )`)
 
-        if(OSQL.length == 0){
+        if (OSQL.length == 0) {
 
             res.json({
                 status: 3,
@@ -406,17 +366,17 @@ const cbxGetEmployeesForOrigen = async(req, res = response) => {
             });
 
         }
-        else{
+        else {
 
             res.json({
-                status:  0,
-                message:"Ejecutado correctamente.",
+                status: 0,
+                message: "Ejecutado correctamente.",
                 data: OSQL
             });
 
         }
 
-    }catch(error){
+    } catch (error) {
 
         res.json({
             status: 2,
@@ -428,15 +388,15 @@ const cbxGetEmployeesForOrigen = async(req, res = response) => {
 
 };
 
-const cbxGetUsersByVendedor = async(req, res = response) => {
+const cbxGetUsersByVendedor = async (req, res = response) => {
 
     const { idOrigen, search = '' } = req.body;
 
-    try{
+    try {
 
-        var OSQL = await dbConnection.query(`call cbxGetUsersByVendedor( '${ search }' )`)
+        var OSQL = await dbConnection.query(`call cbxGetUsersByVendedor( '${search}' )`)
 
-        if(OSQL.length == 0){
+        if (OSQL.length == 0) {
 
             res.json({
                 status: 3,
@@ -445,17 +405,17 @@ const cbxGetUsersByVendedor = async(req, res = response) => {
             });
 
         }
-        else{
+        else {
 
             res.json({
-                status:  0,
-                message:"Ejecutado correctamente.",
+                status: 0,
+                message: "Ejecutado correctamente.",
                 data: OSQL
             });
 
         }
 
-    }catch(error){
+    } catch (error) {
 
         res.json({
             status: 2,
@@ -476,7 +436,6 @@ module.exports = {
     , disabledUser
     , cbxGetSellersCombo
     , updateAuthorizationCode
-    , getCatStatusUser
     , cbxGetEmployeesForOrigen
     , cbxGetUsersByVendedor
-  }
+}

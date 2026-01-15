@@ -9,16 +9,88 @@ const getProductsPag = async (req, res) => {
         , start = 0
         , idUserLogON
     } = req.body;
-console.log(req.body);
+    console.log(req.body);
     try {
 
-        const result = await dbConnection.query(`CALL getProductsPag(
-            '${ search }'
-            , ${ start }
-            , ${ limiter }
-            )`);
-        console.log(result);
-        const iRows = result.length > 0 ? result[0].iRows: 0;
+        const query = `
+            WITH RECURSIVE words AS (
+                SELECT
+                    SUBSTRING_INDEX(?, ' ', 1) AS palabra,
+                    CASE WHEN LOCATE(' ', ?) > 0 THEN SUBSTRING(?, LOCATE(' ', ?) + 1) ELSE '' END AS rest
+                UNION ALL
+                SELECT
+                    SUBSTRING_INDEX(rest, ' ', 1) AS palabra,
+                    CASE WHEN LOCATE(' ', rest) > 0 THEN SUBSTRING(rest, LOCATE(' ', rest) + 1) ELSE '' END AS rest
+                FROM words
+                WHERE rest <> ''
+            ),
+            matches AS (
+                SELECT
+                    P.idProducto,
+                    P.nombre,
+                    P.descripcion,
+                    P.marca,
+                    P.modelo,
+                    P.ancho,
+                    P.perfil,
+                    P.rin,
+                    P.precio,
+                    P.stock,
+                    P.imagen_url,
+                    P.activo,
+                    P.createDate,
+                    (
+                        SELECT COUNT(*) 
+                        FROM words w
+                        WHERE CONCAT(
+                            IFNULL(P.nombre, ''),
+                            ' ', IFNULL(P.marca, ''),
+                            ' ', IFNULL(P.modelo, ''),
+                            ' ', IFNULL(P.descripcion, ''),
+                            ' ', IFNULL(P.ancho, ''),
+                            '/', IFNULL(P.perfil, ''),
+                            ' R', IFNULL(P.rin, '')
+                        ) LIKE CONCAT('%', w.palabra, '%')
+                    ) AS iCountWords
+                FROM productos AS P
+                WHERE
+                    ? = ''
+                    OR EXISTS (
+                        SELECT 1 
+                        FROM words w
+                        WHERE CONCAT(
+                            IFNULL(P.nombre, ''),
+                            ' ', IFNULL(P.marca, ''),
+                            ' ', IFNULL(P.modelo, ''),
+                            ' ', IFNULL(P.descripcion, ''),
+                            ' ', IFNULL(P.ancho, ''),
+                            '/', IFNULL(P.perfil, ''),
+                            ' R', IFNULL(P.rin, '')
+                        ) LIKE CONCAT('%', w.palabra, '%')
+                    )
+            ),
+            total AS (
+                SELECT COUNT(*) as iRows FROM matches
+            )
+            SELECT 
+                matches.*, 
+                total.iRows 
+            FROM matches, total
+            ORDER BY iCountWords DESC, marca ASC, nombre ASC
+            LIMIT ?, ?;
+        `;
+
+        const result = await dbConnection.query(query, {
+            replacements: [
+                search, search, search, search, // for words CTE
+                search, // for where clause
+                parseInt(start),
+                parseInt(limiter)
+            ],
+            type: Op_sequelize.QueryTypes.SELECT
+        });
+
+        const iRows = result.length > 0 ? result[0].iRows : 0;
 
         res.json({
             status: 0,
@@ -46,7 +118,7 @@ const getProductById = async (req, res = response_express.response) => {
 
         const query = `
             SELECT
-                id_producto,
+                idProducto,
                 nombre,
                 descripcion,
                 marca,
@@ -58,32 +130,33 @@ const getProductById = async (req, res = response_express.response) => {
                 stock,
                 imagen_url,
                 activo,
-                fecha_creacion
+                createDate
             FROM productos
-            WHERE id_producto = ? AND activo = 1
+            WHERE idProducto = ?
         `;
 
         const [rows] = await dbSPConnection.query(query, [idProducto]);
 
         if (rows.length === 0) {
-            return res.status(404).json({
-                ok: false,
-                msg: 'Producto no encontrado'
+            return res.json({
+                status: 1,
+                message: 'Producto no encontrado',
+                data: null
             });
         }
 
-        return res.status(200).json({
-            ok: true,
-            msg: 'Producto obtenido correctamente',
+        return res.json({
+            status: 0,
+            message: 'Producto obtenido correctamente',
             data: rows[0]
         });
 
     } catch (error) {
         console.error('Error en getProductById:', error);
-        return res.status(500).json({
-            ok: false,
-            msg: 'Error al obtener producto',
-            error: error.message
+        return res.json({
+            status: 2,
+            message: 'Error al obtener producto',
+            data: error.message
         });
     }
 };
@@ -97,7 +170,7 @@ const getProductsByMarca = async (req, res = response_express.response) => {
 
         const query = `
             SELECT
-                id_producto,
+                idProducto,
                 nombre,
                 descripcion,
                 marca,
@@ -109,9 +182,9 @@ const getProductsByMarca = async (req, res = response_express.response) => {
                 stock,
                 imagen_url,
                 activo,
-                fecha_creacion
+                createDate
             FROM productos
-            WHERE activo = 1
+            WHERE 1 = 1
                 AND marca = ?
                 AND (
                     nombre LIKE ?
@@ -125,7 +198,7 @@ const getProductsByMarca = async (req, res = response_express.response) => {
         const countQuery = `
             SELECT COUNT(*) as total
             FROM productos
-            WHERE activo = 1
+            WHERE 1 = 1
                 AND marca = ?
                 AND (
                     nombre LIKE ?
@@ -142,19 +215,21 @@ const getProductsByMarca = async (req, res = response_express.response) => {
 
         const total = countResult[0].total;
 
-        return res.status(200).json({
-            ok: true,
-            msg: 'Productos obtenidos correctamente',
-            data: rows,
-            total: total
+        return res.json({
+            status: 0,
+            message: 'Productos obtenidos correctamente',
+            data: {
+                total: total,
+                rows: rows
+            }
         });
 
     } catch (error) {
         console.error('Error en getProductsByMarca:', error);
-        return res.status(500).json({
-            ok: false,
-            msg: 'Error al obtener productos por marca',
-            error: error.message
+        return res.json({
+            status: 2,
+            message: 'Error al obtener productos por marca',
+            data: error.message
         });
     }
 };
@@ -167,32 +242,135 @@ const getMarcas = async (req, res = response_express.response) => {
         const query = `
             SELECT DISTINCT marca
             FROM productos
-            WHERE activo = 1
             ORDER BY marca ASC
         `;
 
         const [rows] = await dbSPConnection.query(query);
 
-        return res.status(200).json({
-            ok: true,
-            msg: 'Marcas obtenidas correctamente',
+        return res.json({
+            status: 0,
+            message: 'Marcas obtenidas correctamente',
             data: rows
         });
 
     } catch (error) {
         console.error('Error en getMarcas:', error);
-        return res.status(500).json({
-            ok: false,
-            msg: 'Error al obtener marcas',
-            error: error.message
+        return res.json({
+            status: 2,
+            message: 'Error al obtener marcas',
+            data: error.message
         });
     }
 };
 
 
+
+/**
+ * Guarda o actualiza un producto
+ */
+const saveProduct = async (req, res = response_express.response) => {
+    try {
+        const { producto: productoRaw } = req.body;
+        const producto = JSON.parse(productoRaw);
+
+        let imagen_url = producto.imagen_url;
+
+        // Manejo de imagen si se subió una nueva
+        if (req.files && req.files.image) {
+            const file = req.files.image;
+            const extension = file.name.split('.').pop();
+            const fileName = `${Date.now()}.${extension}`;
+            const uploadPath = `./public/img/productos/${fileName}`;
+
+            await file.mv(uploadPath);
+            imagen_url = `img/productos/${fileName}`;
+        }
+
+        const query = `
+            INSERT INTO productos (
+                idProducto, nombre, descripcion, marca, modelo, 
+                ancho, perfil, rin, precio, stock, 
+                imagen_url, activo, createDate, updateDate
+            ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW(), NOW())
+            ON DUPLICATE KEY UPDATE
+                nombre = VALUES(nombre),
+                descripcion = VALUES(descripcion),
+                marca = VALUES(marca),
+                modelo = VALUES(modelo),
+                ancho = VALUES(ancho),
+                perfil = VALUES(perfil),
+                rin = VALUES(rin),
+                precio = VALUES(precio),
+                stock = VALUES(stock),
+                imagen_url = IFNULL(?, imagen_url),
+                activo = VALUES(activo),
+                updateDate = NOW()
+        `;
+
+        const params = [
+            producto.idProducto || null,
+            producto.nombre,
+            producto.descripcion,
+            producto.marca,
+            producto.modelo,
+            producto.ancho,
+            producto.perfil,
+            producto.rin,
+            producto.precio,
+            producto.stock,
+            imagen_url,
+            producto.activo ? 1 : 0,
+            imagen_url // para el duplicate key update
+        ];
+
+        await dbSPConnection.query(query, params);
+
+        return res.status(200).json({
+            status: 0,
+            message: 'Producto guardado correctamente',
+            data: null
+        });
+
+    } catch (error) {
+        console.error('Error en saveProduct:', error);
+        return res.status(500).json({
+            status: 2,
+            message: 'Error al guardar producto',
+            error: error.message
+        });
+    }
+};
+
+/**
+ * Elimina un producto (Baja lógica)
+ */
+const deleteProduct = async (req, res = response_express.response) => {
+    try {
+        const { idProducto } = req.body;
+
+        const query = `UPDATE productos SET activo = 0, updateDate = NOW() WHERE idProducto = ?`;
+        await dbSPConnection.query(query, [idProducto]);
+
+        return res.status(200).json({
+            status: 0,
+            message: 'Producto eliminado correctamente'
+        });
+
+    } catch (error) {
+        console.error('Error en deleteProduct:', error);
+        return res.status(500).json({
+            status: 2,
+            message: 'Error al eliminar producto',
+            error: error.message
+        });
+    }
+};
+
 module.exports = {
     getProductsPag,
     getProductById,
     getProductsByMarca,
-    getMarcas
+    getMarcas,
+    saveProduct,
+    deleteProduct
 };

@@ -1,0 +1,68 @@
+:root {
+  --primary-color: #2e78c8;
+  --secondary-color: #4caf50;
+  --accent-color: #ff4081;
+  --background-color: #f4f4f9;
+  --text-color: #333;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  font-size: 16px;
+  line-height: 1.5;
+  color: var(--text-color);
+  background-color: var(--background-color);
+  margin: 0;
+  padding: 0;
+}
+
+.roles-card{
+  position: relative;
+  padding-top: 24px; /* un poco más de espacio para que el botón quepa */
+}
+
+/* Botón de agregar (floating) dentro del contenedor */
+.btn-add{
+  position: absolute;
+  top: 12px;        /* ajusta para que no toque el borde superior */
+  left: 16px;
+  width: 44px;      /* tamaño del "cuadrado" */
+  height: 44px;
+  padding: 0;
+  background: #fff;
+  border-radius: 8px; /* ligero redondeo */
+  box-shadow: 0 1px 4px rgba(0,0,0,0.12);
+  z-index: 3;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Icono centrado y escalado */
+.btn-add mat-icon{
+  color: #2e78c8;
+  font-size: 22px;
+  line-height: 1;
+}
+
+.roles-table th{
+  background: #e9e9e9;
+  font-weight: 700;
+  text-align: center;
+}
+
+.roles-table td{
+  vertical-align: middle;
+}
+
+@media (max-width: 600px){
+  .roles-card{
+    padding-top: 18px;
+  }
+  .btn-add{
+    left: 10px;
+    top: 10px;
+    width: 40px;
+    height: 40px;
+  }
+}

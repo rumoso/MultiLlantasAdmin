@@ -187,3 +187,39 @@
         font-size: 13px;
     }
 }
+
+/* Sidebar Submenu Styling */
+.submenu-item {
+    display: flex !important;
+    align-items: center !important;
+    padding-left: 24px !important;
+    height: 48px !important;
+}
+
+.submenu-icon-img {
+    width: 24px;
+    height: 24px;
+    margin-right: 12px;
+    object-fit: contain;
+}
+
+.menu-icon-img {
+    width: 24px;
+    height: 24px;
+    margin-right: 10px;
+    object-fit: contain;
+}
+
+.submenu-icon-glyph {
+    font-size: 22px !important;
+    width: 22px !important;
+    height: 22px !important;
+    margin-right: 12px;
+    color: #004d99;
+    /* Matching brand color */
+}
+
+.submenu-text {
+    font-size: 14px;
+    font-weight: 500;
+}

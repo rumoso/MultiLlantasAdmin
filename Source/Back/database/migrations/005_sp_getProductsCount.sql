@@ -1,8 +1,6 @@
-DELIMITER $$
+DROP PROCEDURE IF EXISTS `getProductsCount`;
 
-DROP PROCEDURE IF EXISTS `sp_getProductsCount`$$
-
-CREATE PROCEDURE `sp_getProductsCount`(
+CREATE PROCEDURE `getProductsCount`(
     IN p_search VARCHAR(500)
 )
 BEGIN
@@ -29,8 +27,7 @@ BEGIN
         COUNT(*) AS total
     FROM productos AS P
     WHERE
-        P.activo = 1
-        AND (
+        (
             p_search = ''
             OR (
                 SELECT COUNT(*) 
@@ -47,6 +44,4 @@ BEGIN
             ) > 0
         );
 
-END$$
-
-DELIMITER ;
+END;

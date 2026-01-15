@@ -78,7 +78,7 @@ export class RolesService {
     return this.http.post<ResponseGet>( `${ this.baseURL }/${ this._api }/getRolByID`, data);
   }
 
-  CDeleteRol( data : any ): Observable<ResponseDB_CRUD> {
+  CDeleteRol( data : any ): Observable <ResponseDB_CRUD> {
 
     data.idUserLogON = this.authServ.getIdUserSession();
     return this.http.post<ResponseDB_CRUD>( `${ this.baseURL }/${ this._api }/deleteRol`, data );

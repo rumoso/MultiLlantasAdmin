@@ -7,7 +7,7 @@ export interface DDialog {
     buttonNo: string
 }
 
-export interface Pagination{
+export interface Pagination {
     search: string;
     length: number;
     pageSize: number;
@@ -21,7 +21,7 @@ export interface Login {
 }
 
 export interface ResponseGet {
-    status:  number;
+    status: number;
     message: string;
     data: any;
 }

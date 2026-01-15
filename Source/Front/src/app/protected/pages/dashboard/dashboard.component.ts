@@ -6,7 +6,7 @@ import { ServicesGService } from '../../../servicesG/servicesG.service';
 import { AuthService } from '../../../auth/services/auth.service';
 import { MatDialog } from '@angular/material/dialog';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { ProductosService } from '../../services/productos.service';
+import { ProductosService } from '../../services/product.service';
 import { Pagination } from '../../interfaces/global.interfaces';
 
 @Component({
@@ -39,13 +39,13 @@ export default class DashboardComponent {
     this.authServ.checkSession();
     this.idUserLogON = this.authServ.getIdUserSession();
 
-    this.getMenuByPermissions( this.idUserLogON );
+    this.getMenuByPermissions(this.idUserLogON);
 
     // Primero obtener la configuración local y información de sucursal
     this.cdr.detectChanges();
   }
 
-  changeRoute( route: string ): void {
+  changeRoute(route: string): void {
     // Rutas que requieren turno activo
     const rutasRestringidas = ['cajaPuntoVenta', 'ventaClientes', 'cobranzaCredito', 'corteIndividual'];
 
@@ -76,20 +76,40 @@ export default class DashboardComponent {
     }
 
     // Navegar normalmente si no hay restricciones o si hay turno activo
-    this.servicesGServ.changeRoute( `/${ this._appMain }/${ route }` );
+    this.servicesGServ.changeRoute(`/${this._appMain}/${route}`);
   }
 
-  getMenuByPermissions(idUser: any){
-    this.authServ.getMenuByPermissions( idUser )
-    .subscribe( data =>{
-      //console.log(data);
-      if(data.status == 0){
-        this._menuList = data.data;
-        // Optional: if you want the first panel open by default with mat-accordion,
-        // you might need to handle it differently or set properties on mat-expansion-panel.
-        // For single expansion, mat-accordion handles it.
-      }
-    })
+  getMenuByPermissions(idUser: any) {
+    this.authServ.getMenuByPermissions(idUser)
+      .subscribe(data => {
+        //console.log(data);
+        if (data.status == 0) {
+          this._menuList = data.data;
+
+          // Manually add Catalog if not present (Quick fix for user request)
+          const catalogExists = this._menuList.some((m: any) => m.name === 'Catálogo');
+          if (!catalogExists) {
+            this._menuList.push({
+              idMenu: 999,
+              name: 'Catálogo',
+              icon: 'inventory_2',
+              subMenus: [
+                {
+                  idMenu: 9991,
+                  name: 'Productos',
+                  description: 'Catálogo de productos de venta',
+                  imgDash: 'inventory',
+                  linkList: 'productList'
+                }
+              ]
+            });
+          }
+
+          // Optional: if you want the first panel open by default with mat-accordion,
+          // you might need to handle it differently or set properties on mat-expansion-panel.
+          // For single expansion, mat-accordion handles it.
+        }
+      })
   }
 
   /**

@@ -1,71 +1,75 @@
 <mat-sidenav-container fullscreen>
 
-    <mat-sidenav #sidenav mode="push">
-        <div class="sidebar-container">
-            <mat-toolbar color="primary">
-              <span>Menú</span>
-              <button (click)="sidenav.toggle()" mat-icon-button class="menu-toggle">
-                <mat-icon>menu</mat-icon>
-              </button>
-            </mat-toolbar>
+  <mat-sidenav #sidenav mode="push">
+    <div class="sidebar-container">
+      <mat-toolbar color="primary">
+        <span>Menú</span>
+        <button (click)="sidenav.toggle()" mat-icon-button class="menu-toggle">
+          <mat-icon>menu</mat-icon>
+        </button>
+      </mat-toolbar>
 
-            <mat-nav-list>
-              <mat-expansion-panel *ngFor="let menuDad of _menuList" class="menu-item">
-                <mat-expansion-panel-header>
-                  <mat-icon>{{ menuDad.icon }}</mat-icon>
-                  <span>{{ menuDad.name }}</span>
-                </mat-expansion-panel-header>
+      <mat-nav-list>
+        <mat-expansion-panel *ngFor="let menuDad of _menuList" class="menu-item">
+          <mat-expansion-panel-header>
+            <ng-container *ngIf="menuDad.icon">
+              <!-- Render as image if it looks like a path, else as material-icon -->
+              <img *ngIf="menuDad.icon.includes('/') || menuDad.icon.includes('.')" [src]="menuDad.icon"
+                class="menu-icon-img" />
+              <mat-icon *ngIf="!menuDad.icon.includes('/') && !menuDad.icon.includes('.')">
+                {{ menuDad.icon }}
+              </mat-icon>
+            </ng-container>
+            <span>{{ menuDad.name }}</span>
+          </mat-expansion-panel-header>
 
-                <div *ngFor="let subMenu of menuDad.subMenus">
-                  <a mat-list-item (click)="changeRoute(subMenu.linkList)">
-                    <!-- <mat-icon>{{ subMenu.icon }}</mat-icon> -->
-                    <!-- <img style="float: left; margin-top: 10px;" src="{{ subMenu.imgDash }}"/> -->
-                    <span class="material-icons">
-                      {{ subMenu.imgDash }}
-                    </span>
-                    <span>{{ subMenu.name }}</span>
-                  </a>
-                </div>
-              </mat-expansion-panel>
-            </mat-nav-list>
+          <div *ngFor="let subMenu of menuDad.subMenus">
+            <a mat-list-item (click)="changeRoute(subMenu.linkList)" class="submenu-item">
+              <!-- Render as image if it looks like a path, else as material-icon -->
+              <ng-container *ngIf="subMenu.imgDash || subMenu.icon">
+                <img
+                  *ngIf="(subMenu.imgDash || subMenu.icon).includes('/') || (subMenu.imgDash || subMenu.icon).includes('.')"
+                  [src]="subMenu.imgDash || subMenu.icon" class="submenu-icon-img" />
+                <span
+                  *ngIf="!(subMenu.imgDash || subMenu.icon).includes('/') && !(subMenu.imgDash || subMenu.icon).includes('.')"
+                  class="material-icons submenu-icon-glyph">
+                  {{ subMenu.imgDash || subMenu.icon }}
+                </span>
+              </ng-container>
+              <span class="submenu-text">{{ subMenu.name }}</span>
+            </a>
           </div>
-
-
-    </mat-sidenav>
-
-    <mat-toolbar id="headerApp">
-        <button mat-icon-button
-        (click)="sidenav.toggle()">
-            <mat-icon>menu</mat-icon>
-        </button>
-
-        <div class="logo-container" routerLink="./dashboard">
-          <img
-              class="logo-img"
-              [src]="_IconApp"
-              alt="Diprolim Logo"
-              width="50"
-          />
-          <span class="logo-text">Sistema Integral de Administración Diprolim (SIAD)</span>
-      </div>
-
-
-        <span class="spacer"></span>
-        <span class="spacer"></span>
-
-        <span class="material-icons">account_circle</span>
-        <span class="hide-on-small">{{ userLogin!.name }}</span>
-
-        <button mat-button
-        (click)="logout()">
-            <mat-icon mat-list-icon>logout</mat-icon>
-        </button>
-    </mat-toolbar>
-
-    <div class="container" style="margin-bottom: 50px;">
-        <router-outlet/>
+        </mat-expansion-panel>
+      </mat-nav-list>
     </div>
 
+
+  </mat-sidenav>
+
+  <mat-toolbar id="headerApp">
+    <button mat-icon-button (click)="sidenav.toggle()">
+      <mat-icon>menu</mat-icon>
+    </button>
+
+    <div class="logo-container" routerLink="./dashboard">
+      <img class="logo-img" [src]="_IconApp" alt="Diprolim Logo" width="50" />
+      <span class="logo-text">Multillantas Admin</span>
+    </div>
+
+
+    <span class="spacer"></span>
+    <span class="spacer"></span>
+
+    <span class="material-icons">account_circle</span>
+    <span class="hide-on-small">{{ userLogin!.name }}</span>
+
+    <button mat-button (click)="logout()">
+      <mat-icon mat-list-icon>logout</mat-icon>
+    </button>
+  </mat-toolbar>
+
+  <div class="container" style="margin-bottom: 50px;">
+    <router-outlet />
+  </div>
+
 </mat-sidenav-container>
-
-

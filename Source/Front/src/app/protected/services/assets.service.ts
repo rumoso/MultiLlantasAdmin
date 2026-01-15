@@ -17,9 +17,11 @@ export class AssetsService {
 
   getImageProductByName(imageFileName: string): string {
     if (!imageFileName) {
-      return 'assets/img/no-image.png';
+      return 'assets/images/no-image.png';
     }
-    return `${ this.baseURL }/${this._api}/productos/image/${imageFileName}`;
+    // Since images are saved in public/img/productos
+    // and public is the static folder, we access it directly
+    return `${this.baseURL}/${imageFileName}`;
   }
 
 }

@@ -1,0 +1,95 @@
+<div class="container-modal">
+    <h2 mat-dialog-title>{{ title }}</h2>
+
+    <mat-dialog-content class="mat-typography">
+        <form #productoForm="ngForm" class="product-form">
+
+            <div class="form-grid">
+                <!-- Información Principal -->
+                <div class="main-fields">
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Nombre del Producto</mat-label>
+                        <input matInput name="nombre" [(ngModel)]="producto.nombre" required
+                            placeholder="Ej. Llanta Firestone F-700">
+                    </mat-form-field>
+
+                    <div class="row-inputs">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Marca</mat-label>
+                            <input matInput name="marca" [(ngModel)]="producto.marca" placeholder="Toyota">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Modelo</mat-label>
+                            <input matInput name="modelo" [(ngModel)]="producto.modelo" placeholder="Corolla">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row-inputs">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Ancho</mat-label>
+                            <input matInput name="ancho" [(ngModel)]="producto.ancho" placeholder="16">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Perfil</mat-label>
+                            <input matInput name="perfil" [(ngModel)]="producto.perfil" placeholder="55">
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row-inputs">
+                        <mat-form-field appearance="outline">
+                            <mat-label>Rin</mat-label>
+                            <input matInput name="rin" [(ngModel)]="producto.rin" placeholder="R16">
+                        </mat-form-field>
+
+                        <mat-form-field appearance="outline">
+                            <mat-label>Precio</mat-label>
+                            <span matPrefix>$&nbsp;</span>
+                            <input matInput type="number" name="precio" [(ngModel)]="producto.precio" required>
+                        </mat-form-field>
+                    </div>
+
+                    <div class="row-inputs">
+                        <div class="active-toggle" style="margin-bottom: 20px;">
+                            <mat-checkbox name="activo" [(ngModel)]="producto.activo">Activo</mat-checkbox>
+                        </div>
+                    </div>
+
+                    <mat-form-field appearance="outline" class="full-width">
+                        <mat-label>Descripción extendida</mat-label>
+                        <textarea matInput name="descripcion" [(ngModel)]="producto.descripcion" rows="3"
+                            placeholder="Detalles adicionales..."></textarea>
+                    </mat-form-field>
+                </div>
+
+                <!-- Imagen -->
+                <div class="image-fields">
+                    <div class="preview-container" (click)="fileInput.click()">
+                        <img [src]="imagePreview || 'assets/images/no-image.png'" alt="Preview">
+                        <div class="overlay">
+                            <mat-icon>camera_alt</mat-icon>
+                            <span>Subir Foto</span>
+                        </div>
+                    </div>
+                    <input #fileInput type="file" (change)="onFileSelected($event)" hidden accept="image/*">
+                    <button mat-button color="warn" class="full-width" *ngIf="imagePreview" (click)="removeImage()">
+                        Quitar imagen
+                    </button>
+                    <p class="image-hint text-center"><small>Haga clic en el cuadro para cambiar la imagen</small></p>
+                </div>
+            </div>
+
+        </form>
+    </mat-dialog-content>
+
+    <mat-dialog-actions align="end">
+        <button mat-button (click)="close()">Cancelar</button>
+        <button mat-raised-button color="primary" [disabled]="bShowSpinner || !prod_CrearEditarEliminar"
+            (click)="ProductoSave()">
+            <mat-icon *ngIf="!bShowSpinner">save</mat-icon>
+            <mat-spinner diameter="20" *ngIf="bShowSpinner"></mat-spinner>
+            {{ OData.id > 0 ? 'Actualizar' : 'Guardar' }}
+        </button>
+    </mat-dialog-actions>
+</div>

@@ -1,0 +1,78 @@
+<div class="divMain mat-elevation-z8">
+    <div class="header-list d-flex justify-content-between align-items-center mb-3">
+        <h2 class="m-0">{{ title }}</h2>
+        <button mat-raised-button color="primary" *ngIf="prod_CrearEditarEliminar" (click)="showProducto()">
+            <mat-icon>add</mat-icon> Nuevo Producto
+        </button>
+    </div>
+
+    <div class="filters-section mb-3">
+        <mat-form-field appearance="outline" class="search-field">
+            <mat-label>Buscar por nombre, marca o modelo...</mat-label>
+            <input matInput #searchInput (keyup)="onChangeEvent($event)" placeholder="Ej. Michelin">
+            <mat-icon matSuffix>search</mat-icon>
+        </mat-form-field>
+    </div>
+
+    <div class="table-container">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr>
+                    <th scope="col" style="width: 60px;">ID</th>
+                    <th scope="col" style="width: 80px;">Img</th>
+                    <th scope="col">Nombre</th>
+                    <th scope="col">Marca</th>
+                    <th scope="col">Modelo</th>
+                    <th scope="col">Medida</th>
+                    <th scope="col" class="text-end">Precio</th>
+                    <th scope="col" class="text-center" style="width: 120px;">Acciones</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr *ngFor="let item of catlist" [ngClass]="{
+                        'inactive-row': item.activo == 0
+                    }">
+                    <td>{{ item.id_producto || item.idProducto }}</td>
+                    <td>
+                        <img [src]="item.imagen_url || 'assets/images/no-image.png'" class="product-thumb"
+                            onerror="this.src='assets/images/no-image.png'">
+                    </td>
+                    <td>
+                        <strong>{{ item.nombre }}</strong>
+                        <span *ngIf="item.activo == 0" class="badge badge-inactive ms-2">Inactivo</span>
+                    </td>
+                    <td>{{ item.marca }}</td>
+                    <td>{{ item.modelo }}</td>
+                    <td>
+                        {{ item.ancho }} / {{ item.perfil }} {{ item.rin }}
+                    </td>
+                    <td class="text-end text-primary fw-bold">
+                        {{ item.precio | currency:'USD':'symbol':'1.2-2' }}
+                    </td>
+                    <td class="text-center">
+                        <button mat-icon-button color="primary" matTooltip="Editar"
+                            (click)="showProducto(item.id_producto || item.idProducto)">
+                            <mat-icon>edit</mat-icon>
+                        </button>
+                        <button mat-icon-button color="warn" matTooltip="Eliminar" *ngIf="item.activo != 0"
+                            (click)="EliminarProducto(item.id_producto || item.idProducto)">
+                            <mat-icon>delete</mat-icon>
+                        </button>
+                    </td>
+                </tr>
+                <tr *ngIf="catlist.length === 0 && !bShowSpinner">
+                    <td colspan="9" class="text-center py-4 text-muted">
+                        No se encontraron productos con los criterios de búsqueda.
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="footer-list">
+        <app-pagination [IPagination]="pagination" (OPagination)="changePagination($event)">
+        </app-pagination>
+    </div>
+
+    <app-spinner [hidden]="!bShowSpinner"></app-spinner>
+</div>
